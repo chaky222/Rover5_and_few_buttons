@@ -62,11 +62,9 @@ void plan_class::send_debug_info(){
   //   SERIAL_ECHOPAIR(" m", motor[u]->global_motor_max_pwm_power); 
   // }
   // SERIAL_ECHOPAIR("  mc=", micros() );  
-  uint16_t c2;
-  c2 = tim2; tim2=0;        
+  uint16_t c2 = tim2;  
+  uint16_t c1 = calc1;   tim2=0;    calc1=0; 
   SERIAL_ECHOPAIR("  tim2=", c2);   
-  uint16_t c1;
-  c1 = calc1; calc1=0; 
   SERIAL_ECHOPAIR("  calc1=", c1);    
   for (int8_t u = 0;u<4;u++){ 
     SERIAL_ECHOPAIR(" tm", motor[u]->invert_direction); 
@@ -450,7 +448,8 @@ volatile void plan_class::init_motors_max_pos(){
     // motor[u]->init_done = false;
     // motor[u]->external_stopped  =false;
     first_motor_pos[u] = motor[u]->position;
-    run_motor_to_pos(u,-100000,motor[u]->global_motor_max_pwm_power/4,true,init_motor_cmd_num,current_cmd_index[u], false);         
+    // run_motor_to_pos(u,-100000,motor[u]->global_motor_max_pwm_power/4,true,init_motor_cmd_num,current_cmd_index[u], false);  
+    run_motor_to_pos(u,-100000,254,true,init_motor_cmd_num,current_cmd_index[u], false);         
   }
   bool is_init;
   is_init = true;
@@ -485,7 +484,8 @@ volatile void plan_class::init_motors_max_pos(){
     }
     motor[u]->e->write(0-stay_offset); 
     first_motor_pos[u] = 0-stay_offset;
-    run_motor_to_pos(u,100000,motor[u]->global_motor_max_pwm_power/4,true,init_motor_cmd_num,current_cmd_index[u], false);  
+    // run_motor_to_pos(u,100000,motor[u]->global_motor_max_pwm_power/4,true,init_motor_cmd_num,current_cmd_index[u], false);
+    run_motor_to_pos(u,100000,254,true,init_motor_cmd_num,current_cmd_index[u], false);  
   }
   is_init = true;
   while (is_init){

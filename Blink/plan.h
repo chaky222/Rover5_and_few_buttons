@@ -158,10 +158,10 @@ class plan_class{
     const int CURRENT_LIMIT = (1024 / 5) * 2.6;  // amps
 
 
-    Dagu4Motor *motor[4] = { new Dagu4Motor(pwm_a, dir_a, CURRENTA,34,35),//
-                            new Dagu4Motor(pwm_b, dir_b, CURRENTB,36,37),
-                            new Dagu4Motor(pwm_c, dir_c, CURRENTC,38,39),
-                            new Dagu4Motor(pwm_d, dir_d, CURRENTD,40,41)};
+    Dagu4Motor *motor[4] = { new Dagu4Motor(pwm_a,11, dir_a, CURRENTA,34,35),//
+                            new Dagu4Motor(pwm_b, 10,dir_b, CURRENTB,36,37),
+                            new Dagu4Motor(pwm_c, 9,dir_c, CURRENTC,38,39),
+                            new Dagu4Motor(pwm_d, 4,dir_d, CURRENTD,40,41)};
 
     
     

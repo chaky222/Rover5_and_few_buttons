@@ -34,11 +34,12 @@ class Dagu4Motor
 {  
 public:  
     Encoder *e;
-    volatile uint8_t _pwmPin=0,_dirPin=0,_currPin=0;
-    Dagu4Motor(uint8_t pwmPin, uint8_t dirPin, uint8_t currPin,uint8_t enc_pin1, uint8_t enc_pin2); 
+    uint8_t _pwmPin=0,_pwmPin2=0,_dirPin=0,_currPin=0;
+    Dagu4Motor(uint8_t pwmPin,uint8_t pwmPin2, uint8_t dirPin, uint8_t currPin,uint8_t enc_pin1, uint8_t enc_pin2); 
 
     	 
-    volatile uint8_t setSpeed(uint8_t speedMotor,uint8_t cmd_num,uint8_t cmd_index, bool try_take_access, bool ignore_cmd_access = false,bool in_free_cmd_on_take_dest = false);  
+    uint8_t setSpeed (uint8_t speedMotor,uint8_t cmd_num,uint8_t cmd_index, bool try_take_access, bool ignore_cmd_access = false,bool in_free_cmd_on_take_dest = false, bool update_max_speed = true);  
+    uint8_t setSpeed1(uint8_t speedMotor,uint8_t cmd_num,uint8_t cmd_index, bool try_take_access, bool ignore_cmd_access = false,bool in_free_cmd_on_take_dest = false, bool update_max_speed = true);  
         // void setSpeed_with_dir(int16_t speedMotor);  
     volatile uint8_t get_access(uint8_t cmd_index);
     volatile bool check_cmd_access(uint8_t cmd_num,uint8_t cmd_index, bool try_take_access);	
@@ -50,41 +51,45 @@ public:
 
 
     void speed_control_interrupt();
+    void speed_control_interrupt1();
     void motor_stay_too_long();
     void motor_take_dest();
 
 
 
-    volatile uint8_t cmd_num_current = 0,cmd_index_current = 1, cmd_status = 0, free_cmd_on_take_dest = false;// 0=free, not buzy. 1=canceled, 2=error,  5=normal_done, 6=PAUSED 10=buzy now,
+    uint8_t cmd_num_current = 0,cmd_index_current = 1, cmd_status = 0, free_cmd_on_take_dest = false;// 0=free, not buzy. 1=canceled, 2=error,  5=normal_done, 6=PAUSED 10=buzy now,
 
     uint8_t  min_pwm_power = 5;
-    volatile uint8_t  max_pwm_power = 200;
-    volatile uint8_t  global_motor_max_pwm_power = 200;
-    volatile int32_t position = 0;
-    volatile int32_t dest_position = 0;
-    volatile int32_t max_position = 100000;
+    uint8_t max_delta_pos_between_speed_control = 7; // 32/1 = encoders_reads/speed_controls_interrupts, so max speed=8. I took 7, but my encoder at home can reading on 2 only :( .
+    uint8_t max_pwm_power = 254;
+    uint8_t global_motor_max_pwm_power = 254;
+    int32_t position = 0;
+    int32_t new_pos = 0;
+    int32_t dest_position = 0;
+    int32_t max_position = 100000;
     // uint32_t Speed;
 
     // volatile int32_t current_speed;
-    volatile bool is_run_now = false,  init_done=false,init_run=false;
-    volatile bool invert_direction = false;
-    volatile bool motor_took_dest = false; 
-	volatile bool motor_dir = false/*0=minus_pos, 1=plus_pos*/, motor_is_blocked_now = false;
+    bool is_run_now = false,  init_done=false,init_run=false;
+    bool invert_direction = false;
+    bool motor_took_dest = false; 
+	bool motor_dir = false/*0=minus_pos, 1=plus_pos*/, motor_is_blocked_now = false;
 
     
-    volatile uint16_t blocked_move_interrupts = 0;
-    volatile int32_t last_blocked_move_interrupt_stay_delta = 200000;
-    volatile int32_t curr_blocked_move_interrupt_stay_delta = 200000;
+    uint16_t blocked_move_interrupts = 0;
+    int32_t last_blocked_move_interrupt_stay_delta = 200000;
+    int32_t curr_blocked_move_interrupt_stay_delta = 200000;
     
     
 
-    uint16_t max_count_die_pwm_interupts = 32000;
-    uint16_t max_count_without_move_ms = 16000; // 8000*2
+    uint16_t max_count_die_pwm_interupts = 4000;
+    uint16_t max_count_without_move_ms = 2000; // 8000*2
 	int32_t debug_tmp = 0;
     uint16_t error_code = 0;
 private:  
     void stopMotor(); 
-    void setMotorDirection(bool isMotor);  
+    void setMotorDirection (bool isMotor);  
+    void setMotorDirection1(bool isMotor);  
     
    
     volatile uint8_t _pwmSpeed=0;  

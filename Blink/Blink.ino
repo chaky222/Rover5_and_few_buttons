@@ -30,22 +30,81 @@ uint16_t calc1 = 0;
  volatile bool plan_loaded = false;
 
 ISR(TIMER1_OVF_vect) {
+  cli();
+  
+    // TCNT1=65520;
+    for (uint8_t u = 0;u<4;u++){ p->motor[u]->new_pos = p->motor[u]->e->read(); }
+    p->calc1++;
+    TCNT1=65533;
+    
+    // timer_div();
+  
+  sei();
 //  return;
-  p->inter();
+  // p->inter();
   // p->calc1++;
   // TCNT1 = 10000;// 65536
   //TCNT2 = 0;
   // calc1=TCNT1;
 }
- 
+
+uint16_t timer_calc = 0;
+
+uint16_t proc[3][2]{  // 1-st count, 2-nd - divider  16kHZ will div to this:
+                      {0,2},//500 Hz
+                      {0,64},// 16Hz
+                      {0,1024} // 1Hz  
+                      // {0,16},//1 kHz
+                      // {0,1024},// 16Hz
+                      // {0,16384} // 1Hz                     
+                    };
+
 ISR(TIMER2_OVF_vect) {
-  // p->tim2++;   
-  // for (uint8_t u = 0;u<4;u++){ 
-  //   p->motor[u]->e->read();
-  // }
-  // TCNT2 = 240; // 8kHz encoders read. timer2 have more priority.
-   
+  sei();
+  timer_div();
+  // TCNT2 = 192;
+  // TCNT2 = 240;
+  // p->calc1++;
+  
+  // for (uint8_t u = 0;u<4;u++){ p->motor[u]->new_pos = p->motor[u]->e->read(); }
+  
+
 }
+void timer_div(){
+  timer_calc++;
+  for (uint8_t u =0;u<3;u++){
+    uint16_t proc3_count_tmp = (timer_calc & proc[u][1]);
+    if (!(proc3_count_tmp == proc[u][0])){
+      proc[u][0] = proc3_count_tmp;
+      switch(u){
+        case 0:// 1kHz
+          
+          p->motor[0]->speed_control_interrupt();
+          p->motor[1]->speed_control_interrupt();
+          p->motor[2]->speed_control_interrupt();
+          p->motor[3]->speed_control_interrupt();
+          p->tim2++; 
+          break; 
+        case 1: // 16Hz
+          p->keyb->inter();  
+          // p->calc1++;
+          break;
+        case 2: // 1Hz
+          p->plan_inter(); 
+          // p->calc1++;
+          break; 
+        default: 
+        break;
+      } 
+      // 
+    }
+
+  } 
+
+}
+
+
+
 
 void plan_callBack(){ 
   p->cnt->set_time(50000,0);  // 2 Hz
@@ -58,12 +117,13 @@ void fld_callBack(){
 }
 
 void motors_callBack(){  
+  // p->calc1++; 
   p->motor[0]->speed_control_interrupt();
   p->motor[1]->speed_control_interrupt();
   p->motor[2]->speed_control_interrupt();
   p->motor[3]->speed_control_interrupt();
-  p->cnt->set_time(6,2);//  4kHz
-  // p->calc1++;
+  p->cnt->set_time(96,2);//  1kHz
+  
 }
 void keyb_callBack(){  
   p->cnt->set_time(3200,3); // 10 Hz
@@ -107,7 +167,7 @@ void setup() {
   p->cnt->set_time(50,2); 
   p->cnt->set_time(1000,3); // 100 Hz
   digitalWrite(13,0);
-  delay(4000); // dalay for normal launch timers!!! interrupts - is evil! :)
+  // delay(4000); // dalay for normal launch timers!!! interrupts - is evil! :)
   p->load_from_eeprom();
   digitalWrite(13,1);
   p->cnt->launch_timers();
@@ -122,5 +182,7 @@ void setup() {
 
 void loop() {
   p->cmd_loop();
+  // delay(1000);
+  // p->send_debug_info();
 
 }
